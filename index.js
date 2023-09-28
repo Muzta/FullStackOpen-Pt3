@@ -57,8 +57,10 @@ const generateId = () => {
 
 app.post("/api/persons", (request, response) => {
   const body = request.body;
-  if (!body.name) {
-    return response.status(400).json({ error: "Name missed" });
+  if (!body.name || !body.number) {
+    return response.status(400).json({ error: "Name or number missed" });
+  } else if (phonebook.find((person) => person.name === body.name)) {
+    return response.status(400).json({ error: "Name must be unique" });
   }
   const person = { ...body, id: generateId() };
   phonebook = phonebook.concat(person);
