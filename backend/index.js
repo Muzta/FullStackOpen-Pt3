@@ -1,24 +1,16 @@
 require("dotenv").config();
 const express = require("express");
-const morgan = require("morgan");
 const cors = require("cors");
 const Person = require("./models/person");
+const unknownEndpointMiddleware = require("./middlewares/unknownEndpoints");
+const errorHandlerMiddleware = require("./middlewares/errorHandler");
+const morganMiddleware = require("./middlewares/morgan");
 const app = express();
 
 app.use(express.json());
 app.use(cors());
 app.use(express.static("static_dist"));
-
-morgan.token("person-data", (req, res) => {
-  if (req.method === "POST") {
-    return JSON.stringify(req.body);
-  }
-});
-app.use(
-  morgan(
-    ":method :url :status :res[content-length] - :response-time ms :person-data"
-  )
-);
+app.use(morganMiddleware);
 
 app.get("/info", (request, response) => {
   const requestDate = new Date();
@@ -34,25 +26,19 @@ app.get("/api/persons", (request, response) =>
   })
 );
 
-app.get("/api/persons/:id", (request, response) => {
+app.get("/api/persons/:id", (request, response, next) => {
   Person.findById(request.params.id)
     .then((person) => {
       if (person) response.json(person).end();
       else response.status(404).end();
     })
-    .catch((error) => {
-      console.log(error);
-      response.status(500).end();
-    });
+    .catch((error) => next(error));
 });
 
-app.delete("/api/persons/:id", (request, response) => {
+app.delete("/api/persons/:id", (request, response, next) => {
   Person.findByIdAndRemove(request.params.id)
     .then((result) => response.status(204).end())
-    .catch((error) => {
-      console.log(error);
-      response.status(500).end();
-    });
+    .catch((error) => next(error));
 });
 
 app.post("/api/persons", (request, response) => {
@@ -65,11 +51,8 @@ app.post("/api/persons", (request, response) => {
   person.save().then((savedPerson) => response.json(savedPerson));
 });
 
-const unknownEndpoint = (request, response) => {
-  response.status(404).json({ error: "Unknown endpoint" });
-};
-
-app.use(unknownEndpoint);
+app.use(unknownEndpointMiddleware);
+app.use(errorHandlerMiddleware);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
