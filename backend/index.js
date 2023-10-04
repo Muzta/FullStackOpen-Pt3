@@ -41,14 +41,23 @@ app.delete("/api/persons/:id", (request, response, next) => {
     .catch((error) => next(error));
 });
 
-app.post("/api/persons", (request, response) => {
+app.post("/api/persons", (request, response, next) => {
   const body = request.body;
   if (!body.name || !body.number) {
     return response.status(400).json({ error: "Name or number missed" });
   }
 
-  const person = new Person({ ...body });
-  person.save().then((savedPerson) => response.json(savedPerson));
+  Person.findOneAndUpdate({ name: body.name }, { ...body }, { new: true })
+    .then((updatedPerson) => {
+      if (!updatedPerson) {
+        const newPerson = new Person({ ...body });
+        newPerson
+          .save()
+          .then((savedPerson) => response.json(savedPerson))
+          .catch((error) => next(error));
+      } else response.json(updatedPerson);
+    })
+    .catch((error) => next(error));
 });
 
 app.use(unknownEndpointMiddleware);
