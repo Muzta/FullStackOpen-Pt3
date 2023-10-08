@@ -41,23 +41,40 @@ app.delete("/api/persons/:id", (request, response, next) => {
     .catch((error) => next(error));
 });
 
-app.post("/api/persons", (request, response, next) => {
+const updateOrCreatePerson = (request, response, next) => {
   const body = request.body;
-  if (!body.name || !body.number) {
+  if (!body.name || !body.number)
     return response.status(400).json({ error: "Name or number missed" });
-  }
 
-  Person.findOneAndUpdate({ name: body.name }, { ...body }, { new: true })
-    .then((updatedPerson) => {
-      if (!updatedPerson) {
+  Person.findOne({ name: body.name })
+    .then((person) => {
+      // That person is not in the db
+      if (!person) {
         const newPerson = new Person({ ...body });
         newPerson
           .save()
           .then((savedPerson) => response.json(savedPerson))
           .catch((error) => next(error));
-      } else response.json(updatedPerson);
+      } else {
+        // Otherwise, take its id and update
+        Person.findByIdAndUpdate(
+          person.id,
+          { ...body },
+          { new: true, runValidators: true, context: "query" }
+        )
+          .then((updatedPerson) => response.json(updatedPerson))
+          .catch((error) => next(error));
+      }
     })
     .catch((error) => next(error));
+};
+
+app.post("/api/persons", (request, response, next) => {
+  updateOrCreatePerson(request, response, next);
+});
+
+app.put("/api/persons/:id", (request, response, next) => {
+  updateOrCreatePerson(request, response, next);
 });
 
 app.use(unknownEndpointMiddleware);
