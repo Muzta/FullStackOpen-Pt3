@@ -5,7 +5,7 @@ const url = process.env.MONGO_URI;
 mongoose.set("strictQuery", false);
 mongoose
   .connect(url)
-  .then((result) => {
+  .then(() => {
     console.log("Connected to MongoDB");
   })
   .catch((error) => {
@@ -23,7 +23,7 @@ const personSchema = new mongoose.Schema({
         return pattern.test(value);
       },
       message: () =>
-        `Invalid format! Use XX-XXXXX, where XX is 2-3 numbers and XXXXX is numbers`,
+        "Invalid format! Use XX-XXXXX, where XX is 2-3 numbers and XXXXX is numbers",
     },
     required: true,
   },

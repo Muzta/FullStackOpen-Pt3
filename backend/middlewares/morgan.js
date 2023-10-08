@@ -1,6 +1,6 @@
 const morgan = require("morgan");
 
-morgan.token("person-data", (req, res) => {
+morgan.token("person-data", (req) => {
   if (req.method === "POST") {
     return JSON.stringify(req.body);
   }

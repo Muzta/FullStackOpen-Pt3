@@ -8,11 +8,13 @@
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:ui": "rm -rf static_dist && cd ../frontend && npm run build && cp -r dist ../backend/static_dist",
-    "deploy:full": "npm run build:ui && git -C .. add . && git commit -e && git push"
+    "deploy:full": "npm run build:ui && git -C .. add . && git commit -e && git push",
+    "lint": "eslint ."
   },
   "author": "Muzta",
   "license": "MIT",
   "devDependencies": {
+    "eslint": "^8.51.0",
     "nodemon": "^3.0.1"
   },
   "dependencies": {
