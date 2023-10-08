@@ -14,7 +14,19 @@ mongoose
 
 const personSchema = new mongoose.Schema({
   name: { type: String, minLength: 3, required: true },
-  number: String,
+  number: {
+    type: String,
+    minLength: [8, "Must be min 8 digits"],
+    validate: {
+      validator: (value) => {
+        const pattern = /^\d{2,3}-\d+$/;
+        return pattern.test(value);
+      },
+      message: () =>
+        `Invalid format! Use XX-XXXXX, where XX is 2-3 numbers and XXXXX is numbers`,
+    },
+    required: true,
+  },
 });
 
 personSchema.set("toJSON", {

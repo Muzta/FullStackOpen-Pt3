@@ -33,18 +33,29 @@ const App = () => {
         number: newNumber,
       };
 
-      phonebookService.create(newPerson).then((returnedPerson) => {
-        setPersons(persons.concat(returnedPerson));
-        setNewName("");
-        setNewNumber("");
-        setNotification({
-          message: `${newPerson.name} was added`,
-          error: false,
+      phonebookService
+        .create(newPerson)
+        .then((returnedPerson) => {
+          setPersons(persons.concat(returnedPerson));
+          setNewName("");
+          setNewNumber("");
+          setNotification({
+            message: `${newPerson.name} was added`,
+            error: false,
+          });
+          setTimeout(() => {
+            setNotification({});
+          }, 5000);
+        })
+        .catch((error) => {
+          setNotification({
+            message: error.response.data.error,
+            error: true,
+          });
+          setTimeout(() => {
+            setNotification({});
+          }, 5000);
         });
-        setTimeout(() => {
-          setNotification({});
-        }, 5000);
-      });
     }
   };
 
@@ -53,9 +64,9 @@ const App = () => {
       phonebookService
         .remove(person.id)
         .then(() => setPersons(persons.filter((p) => p.id !== person.id)))
-        .catch(() => {
+        .catch((error) => {
           setNotification({
-            message: `Information of ${person.name} has already been removed from the server`,
+            message: error.response.data.error,
             error: true,
           });
           setTimeout(() => {
@@ -88,9 +99,9 @@ const App = () => {
             setNotification({});
           }, 5000);
         })
-        .catch(() => {
+        .catch((error) => {
           setNotification({
-            message: `Information of ${person.name} has already been removed from the server`,
+            message: error.response.data.error,
             error: true,
           });
           setTimeout(() => {
